@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>상하이 여행 일정 ✈️</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(to bottom right, #f0f4ff, #ffe6f0);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .section {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .section-header {
+            padding: 20px;
+            color: white;
+            font-size: 1.5em;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .attractions .section-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .restaurants .section-header {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .add-btn {
+            background: white;
+            color: #333;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        .attractions .add-btn {
+            background: white;
+            color: #667eea;
+        }
+
+        .restaurants .add-btn {
+            background: white;
+            color: #f5576c;
+        }
+
+        .add-btn:hover {
+            opacity: 0.9;
+        }
+
+        .items-list {
+            padding: 20px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .item {
+            background: #f9f9f9;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            border-left: 4px solid;
+        }
+
+        .attractions .item {
+            border-left-color: #667eea;
+        }
+
+        .restaurants .item {
+            border-left-color: #f5576c;
+        }
+
+        .item-title {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .delete-btn {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        .delete-btn:hover {
+            background: #ff5252;
+        }
+
+        .item-detail {
+            font-size: 0.95em;
+            color: #666;
+            margin: 5px 0;
+        }
+
+        .item-link {
+            display: inline-block;
+            margin-top: 8px;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .item-link:hover {
+            text-decoration: underline;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .modal h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 1em;
+        }
+
+        .form-group textarea {
+            resize: none;
+            height: 80px;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1em;
+        }
+
+        .btn-cancel {
+            background: #ddd;
+            color: #333;
+        }
+
+        .btn-submit {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-submit:hover {
+            background: #764ba2;
+        }
+
+        .btn-cancel:hover {
+            background: #ccc;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>상하이 여행 일정 ✈️</h1>
+            <p class="subtitle">2026.7.27-7.30 (3박 4일)</p>
+        </header>
+
+        <div class="grid">
+            <!-- 관광지 섹션 -->
+            <div class="section attractions">
+                <div class="section-header">
+                    <span>📍 관광지</span>
+                </div>
+                <div class="section-header" style="padding: 10px 20px; font-size: 1em;">
+                    <button class="add-btn" onclick="openForm('attraction')">+ 관광지 추가</button>
+                </div>
+                <div class="items-list" id="attractions-list">
+                    <div class="empty-state">관광지를 추가하세요</div>
+                </div>
+            </div>
+
+            <!-- 맛집 섹션 -->
+            <div class="section restaurants">
+                <div class="section-header">
+                    <span>🍽️ 맛집</span>
+                </div>
+                <div class="section-header" style="padding: 10px 20px; font-size: 1em;">
+                    <button class="add-btn" onclick="openForm('restaurant')">+ 맛집 추가</button>
+                </div>
+                <div class="items-list" id="restaurants-list">
+                    <div class="empty-state">맛집을 추가하세요</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 모달 -->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <h2 id="modal-title">항목 추가</h2>
+            <form id="form">
+                <div class="form-group">
+                    <label>이름 *</label>
+                    <input type="text" id="name" required>
+                </div>
+
+                <div id="attraction-fields" style="display: none;">
+                    <div class="form-group">
+                        <label>카테고리 (예: 도보, 디디 10분)</label>
+                        <input type="text" id="category">
+                    </div>
+                    <div class="form-group">
+                        <label>입장료</label>
+                        <input type="text" id="price">
+                    </div>
+                </div>
+
+                <div id="restaurant-fields" style="display: none;">
+                    <div class="form-group">
+                        <label>음식 종류</label>
+                        <input type="text" id="cuisine">
+                    </div>
+                    <div class="form-group">
+                        <label>위치</label>
+                        <input type="text" id="location">
+                    </div>
+                    <div class="form-group">
+                        <label>가격</label>
+                        <input type="text" id="restaurant-price">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>메모</label>
+                    <textarea id="memo"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>구글맵 링크</label>
+                    <input type="url" id="map-link">
+                </div>
+
+                <div class="button-group">
+                    <button type="button" class="btn btn-cancel" onclick="closeForm()">취소</button>
+                    <button type="submit" class="btn btn-submit">추가</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
+        import { getFirestore, collection, addDoc, deleteDoc, doc, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
+        import { getAuth, signInAnonymously } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBaHTOM_-VhjfSYnDy_u2x6mgPWSD-Z6Pg",
+            authDomain: "summer-vacation-shanghai.firebaseapp.com",
+            projectId: "summer-vacation-shanghai",
+            storageBucket: "summer-vacation-shanghai.firebasestorage.app",
+            messagingSenderId: "257063179590",
+            appId: "1:257063179590:web:2976633be463d1ef3a8147"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        signInAnonymously(auth).catch(console.error);
+
+        let currentType = null;
+
+        window.openForm = function(type) {
+            currentType = type;
+            document.getElementById('modal-title').textContent = type === 'attraction' ? '관광지 추가' : '맛집 추가';
+            document.getElementById('attraction-fields').style.display = type === 'attraction' ? 'block' : 'none';
+            document.getElementById('restaurant-fields').style.display = type === 'restaurant' ? 'block' : 'none';
+            document.getElementById('modal').classList.add('active');
+        };
+
+        window.closeForm = function() {
+            document.getElementById('modal').classList.remove('active');
+            document.getElementById('form').reset();
+        };
+
+        document.getElementById('form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const name = document.getElementById('name').value;
+            const memo = document.getElementById('memo').value;
+            const mapLink = document.getElementById('map-link').value;
+
+            const data = {
+                type: currentType,
+                name,
+                memo,
+                mapLink,
+                createdAt: Date.now()
+            };
+
+            if (currentType === 'attraction') {
+                data.category = document.getElementById('category').value;
+                data.price = document.getElementById('price').value;
+            } else {
+                data.cuisine = document.getElementById('cuisine').value;
+                data.location = document.getElementById('location').value;
+                data.price = document.getElementById('restaurant-price').value;
+            }
+
+            await addDoc(collection(db, 'itinerary'), data);
+            closeForm();
+            loadItems();
+        });
+
+        window.deleteItem = async function(id) {
+            if (confirm('삭제하시겠습니까?')) {
+                await deleteDoc(doc(db, 'itinerary', id));
+                loadItems();
+            }
+        };
+
+        async function loadItems() {
+            const items = await getDocs(collection(db, 'itinerary'));
+            const attractions = [];
+            const restaurants = [];
+
+            items.forEach(doc => {
+                const data = { id: doc.id, ...doc.data() };
+                if (data.type === 'attraction') {
+                    attractions.push(data);
+                } else {
+                    restaurants.push(data);
+                }
+            });
+
+            renderItems('attractions-list', attractions, 'attraction');
+            renderItems('restaurants-list', restaurants, 'restaurant');
+        }
+
+        function renderItems(elementId, items, type) {
+            const list = document.getElementById(elementId);
+
+            if (items.length === 0) {
+                list.innerHTML = `<div class="empty-state">${type === 'attraction' ? '관광지를 추가하세요' : '맛집을 추가하세요'}</div>`;
+                return;
+            }
+
+            list.innerHTML = items.map(item => `
+                <div class="item">
+                    <div class="item-title">
+                        <span>${item.name}</span>
+                        <button class="delete-btn" onclick="deleteItem('${item.id}')">삭제</button>
+                    </div>
+                    ${type === 'attraction' ? `
+                        ${item.category ? `<div class="item-detail">📍 ${item.category}</div>` : ''}
+                        ${item.price ? `<div class="item-detail">💰 ${item.price}</div>` : ''}
+                    ` : `
+                        ${item.cuisine ? `<div class="item-detail">🍽️ ${item.cuisine}</div>` : ''}
+                        ${item.location ? `<div class="item-detail">📍 ${item.location}</div>` : ''}
+                        ${item.price ? `<div class="item-detail">💰 ${item.price}</div>` : ''}
+                    `}
+                    ${item.memo ? `<div class="item-detail">💡 ${item.memo}</div>` : ''}
+                    ${item.mapLink ? `<a href="${item.mapLink}" target="_blank" class="item-link">🗺️ 지도보기</a>` : ''}
+                </div>
+            `).join('');
+        }
+
+        loadItems();
+        setInterval(loadItems, 3000);
+    </script>
+</body>
+</html>
