@@ -39,7 +39,51 @@
             font-size: 1.1em;
         }
 
-        .grid {
+        .date-tabs {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .date-tabs {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .date-tab {
+            padding: 15px;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: center;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .date-tab:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .date-tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+
+        .date-tab-date {
+            font-size: 1.2em;
+        }
+
+        .date-tab-day {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .content {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 30px;
@@ -47,7 +91,7 @@
         }
 
         @media (max-width: 768px) {
-            .grid {
+            .content {
                 grid-template-columns: 1fr;
             }
         }
@@ -105,7 +149,7 @@
 
         .items-list {
             padding: 20px;
-            max-height: 600px;
+            max-height: 500px;
             overflow-y: auto;
         }
 
@@ -209,7 +253,8 @@
         }
 
         .form-group input,
-        .form-group textarea {
+        .form-group textarea,
+        .form-group select {
             width: 100%;
             padding: 10px;
             border: 1px solid #ddd;
@@ -271,7 +316,27 @@
             <p class="subtitle">2026.7.27-7.30 (3박 4일)</p>
         </header>
 
-        <div class="grid">
+        <!-- 날짜 탭 -->
+        <div class="date-tabs">
+            <div class="date-tab active" onclick="selectDate('2026-07-27')">
+                <div class="date-tab-date">7/27</div>
+                <div class="date-tab-day">월</div>
+            </div>
+            <div class="date-tab" onclick="selectDate('2026-07-28')">
+                <div class="date-tab-date">7/28</div>
+                <div class="date-tab-day">화</div>
+            </div>
+            <div class="date-tab" onclick="selectDate('2026-07-29')">
+                <div class="date-tab-date">7/29</div>
+                <div class="date-tab-day">수</div>
+            </div>
+            <div class="date-tab" onclick="selectDate('2026-07-30')">
+                <div class="date-tab-date">7/30</div>
+                <div class="date-tab-day">목</div>
+            </div>
+        </div>
+
+        <div class="content">
             <!-- 관광지 섹션 -->
             <div class="section attractions">
                 <div class="section-header">
@@ -305,6 +370,17 @@
         <div class="modal-content">
             <h2 id="modal-title">항목 추가</h2>
             <form id="form">
+                <div class="form-group">
+                    <label>날짜 *</label>
+                    <select id="date" required>
+                        <option value="">날짜 선택</option>
+                        <option value="2026-07-27">7/27 (월)</option>
+                        <option value="2026-07-28">7/28 (화)</option>
+                        <option value="2026-07-29">7/29 (수)</option>
+                        <option value="2026-07-30">7/30 (목)</option>
+                    </select>
+                </div>
+
                 <div class="form-group">
                     <label>이름 *</label>
                     <input type="text" id="name" required>
@@ -375,9 +451,20 @@
         signInAnonymously(auth).catch(console.error);
 
         let currentType = null;
+        let currentDate = '2026-07-27';
+
+        window.selectDate = function(date) {
+            currentDate = date;
+            document.querySelectorAll('.date-tab').forEach((tab, i) => {
+                tab.classList.remove('active');
+            });
+            event.target.closest('.date-tab').classList.add('active');
+            loadItems();
+        };
 
         window.openForm = function(type) {
             currentType = type;
+            document.getElementById('date').value = currentDate;
             document.getElementById('modal-title').textContent = type === 'attraction' ? '관광지 추가' : '맛집 추가';
             document.getElementById('attraction-fields').style.display = type === 'attraction' ? 'block' : 'none';
             document.getElementById('restaurant-fields').style.display = type === 'restaurant' ? 'block' : 'none';
@@ -392,12 +479,14 @@
         document.getElementById('form').addEventListener('submit', async (e) => {
             e.preventDefault();
 
+            const date = document.getElementById('date').value;
             const name = document.getElementById('name').value;
             const memo = document.getElementById('memo').value;
             const mapLink = document.getElementById('map-link').value;
 
             const data = {
                 type: currentType,
+                date,
                 name,
                 memo,
                 mapLink,
@@ -432,10 +521,12 @@
 
             items.forEach(doc => {
                 const data = { id: doc.id, ...doc.data() };
-                if (data.type === 'attraction') {
-                    attractions.push(data);
-                } else {
-                    restaurants.push(data);
+                if (data.date === currentDate) {
+                    if (data.type === 'attraction') {
+                        attractions.push(data);
+                    } else {
+                        restaurants.push(data);
+                    }
                 }
             });
 
