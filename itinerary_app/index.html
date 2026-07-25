@@ -154,11 +154,12 @@
         }
 
         .item {
-            background: #f9f9f9;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
             padding: 15px;
             margin-bottom: 15px;
             border-radius: 10px;
             border-left: 4px solid;
+            color: white;
         }
 
         .attractions .item {
@@ -167,6 +168,13 @@
 
         .restaurants .item {
             border-left-color: #f5576c;
+        }
+
+        .item-time {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #ffc107;
         }
 
         .item-title {
@@ -382,6 +390,11 @@
                 </div>
 
                 <div class="form-group">
+                    <label>시간 (예: 14:00)</label>
+                    <input type="time" id="time">
+                </div>
+
+                <div class="form-group">
                     <label>이름 *</label>
                     <input type="text" id="name" required>
                 </div>
@@ -480,6 +493,7 @@
             e.preventDefault();
 
             const date = document.getElementById('date').value;
+            const time = document.getElementById('time').value || '00:00';
             const name = document.getElementById('name').value;
             const memo = document.getElementById('memo').value;
             const mapLink = document.getElementById('map-link').value;
@@ -487,6 +501,7 @@
             const data = {
                 type: currentType,
                 date,
+                time,
                 name,
                 memo,
                 mapLink,
@@ -542,8 +557,16 @@
                 return;
             }
 
-            list.innerHTML = items.map(item => `
+            // 시간별로 정렬
+            const sorted = [...items].sort((a, b) => {
+                const timeA = a.time || '00:00';
+                const timeB = b.time || '00:00';
+                return timeA.localeCompare(timeB);
+            });
+
+            list.innerHTML = sorted.map(item => `
                 <div class="item">
+                    ${item.time ? `<div class="item-time">⏰ ${item.time}</div>` : ''}
                     <div class="item-title">
                         <span>${item.name}</span>
                         <button class="delete-btn" onclick="deleteItem('${item.id}')">삭제</button>
