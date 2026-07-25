@@ -370,6 +370,15 @@
                 </div>
 
                 <div class="form-group">
+                    <label>종류 *</label>
+                    <select id="type" required onchange="updateFormFields()">
+                        <option value="">선택하세요</option>
+                        <option value="attraction">📍 관광지</option>
+                        <option value="restaurant">🍽️ 맛집</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
                     <label>시간 (예: 14:00)</label>
                     <input type="time" id="time">
                 </div>
@@ -465,6 +474,12 @@
         document.getElementById('form').addEventListener('submit', async (e) => {
             e.preventDefault();
 
+            const type = document.getElementById('type').value;
+            if (!type) {
+                alert('종류를 선택하세요');
+                return;
+            }
+
             const date = document.getElementById('date').value;
             const time = document.getElementById('time').value || '00:00';
             const name = document.getElementById('name').value;
@@ -472,7 +487,7 @@
             const mapLink = document.getElementById('map-link').value;
 
             const data = {
-                type: currentType,
+                type,
                 date,
                 time,
                 name,
@@ -481,7 +496,7 @@
                 createdAt: Date.now()
             };
 
-            if (currentType === 'attraction') {
+            if (type === 'attraction') {
                 data.category = document.getElementById('category').value;
                 data.price = document.getElementById('price').value;
             } else {
@@ -529,35 +544,20 @@
             let html = '';
 
             dates.forEach(date => {
-                const attractions = allItems[date].attractions;
-                const restaurants = allItems[date].restaurants;
-                const hasItems = attractions.length + restaurants.length > 0;
+                const allDayItems = [...allItems[date].attractions, ...allItems[date].restaurants];
 
                 html += `
                     <div style="margin-bottom: 40px;">
                         <h2 style="color: #333; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #667eea;">📅 ${dateLabels[date]}</h2>
-                        <div class="content">
-                            <div class="section attractions">
-                                <div class="section-header">
-                                    <span>📍 관광지</span>
-                                </div>
-                                <div class="section-header" style="padding: 10px 20px; font-size: 1em;">
-                                    <button class="add-btn" onclick="setDateAndOpen('${date}', 'attraction')">+ 관광지 추가</button>
-                                </div>
-                                <div class="items-list">
-                                    ${attractions.length === 0 ? '<div class="empty-state">관광지를 추가하세요</div>' : renderDateItems(attractions, 'attraction')}
-                                </div>
+                        <div class="section" style="grid-column: auto;">
+                            <div class="section-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                <span>📋 일정</span>
                             </div>
-                            <div class="section restaurants">
-                                <div class="section-header">
-                                    <span>🍽️ 맛집</span>
-                                </div>
-                                <div class="section-header" style="padding: 10px 20px; font-size: 1em;">
-                                    <button class="add-btn" onclick="setDateAndOpen('${date}', 'restaurant')">+ 맛집 추가</button>
-                                </div>
-                                <div class="items-list">
-                                    ${restaurants.length === 0 ? '<div class="empty-state">맛집을 추가하세요</div>' : renderDateItems(restaurants, 'restaurant')}
-                                </div>
+                            <div class="section-header" style="padding: 10px 20px; font-size: 1em;">
+                                <button class="add-btn" style="color: #667eea;" onclick="setDateAndOpen('${date}', null)">+ 일정 추가</button>
+                            </div>
+                            <div class="items-list">
+                                ${allDayItems.length === 0 ? '<div class="empty-state">일정을 추가하세요</div>' : renderDateItems(allDayItems)}
                             </div>
                         </div>
                     </div>
@@ -567,41 +567,54 @@
             container.innerHTML = html;
         }
 
-        function renderDateItems(items, type) {
+        function renderDateItems(items) {
             const sorted = [...items].sort((a, b) => {
                 const timeA = a.time || '00:00';
                 const timeB = b.time || '00:00';
                 return timeA.localeCompare(timeB);
             });
 
-            return sorted.map(item => `
-                <div class="item">
-                    ${item.time ? `<div class="item-time">⏰ ${item.time}</div>` : ''}
-                    <div class="item-title">
-                        <span>${item.name}</span>
-                        <button class="delete-btn" onclick="deleteItem('${item.id}')">삭제</button>
+            return sorted.map(item => {
+                const typeLabel = item.type === 'attraction' ? '📍 관광지' : '🍽️ 맛집';
+                const typeColor = item.type === 'attraction' ? '#667eea' : '#f5576c';
+
+                return `
+                    <div class="item">
+                        <div style="display: flex; gap: 10px; margin-bottom: 8px;">
+                            <span style="background: ${typeColor}; color: white; padding: 3px 10px; border-radius: 5px; font-size: 0.85em; font-weight: bold;">${typeLabel}</span>
+                            ${item.time ? `<span style="color: #ffc107; font-weight: bold;">⏰ ${item.time}</span>` : ''}
+                        </div>
+                        <div class="item-title">
+                            <span>${item.name}</span>
+                            <button class="delete-btn" onclick="deleteItem('${item.id}')">삭제</button>
+                        </div>
+                        ${item.type === 'attraction' ? `
+                            ${item.category ? `<div class="item-detail">📍 ${item.category}</div>` : ''}
+                            ${item.price ? `<div class="item-detail">💰 ${item.price}</div>` : ''}
+                        ` : `
+                            ${item.cuisine ? `<div class="item-detail">🍽️ ${item.cuisine}</div>` : ''}
+                            ${item.location ? `<div class="item-detail">📍 ${item.location}</div>` : ''}
+                            ${item.price ? `<div class="item-detail">💰 ${item.price}</div>` : ''}
+                        `}
+                        ${item.memo ? `<div class="item-detail">💡 ${item.memo}</div>` : ''}
+                        ${item.mapLink ? `<a href="${item.mapLink}" target="_blank" class="item-link">🗺️ 지도보기</a>` : ''}
                     </div>
-                    ${type === 'attraction' ? `
-                        ${item.category ? `<div class="item-detail">📍 ${item.category}</div>` : ''}
-                        ${item.price ? `<div class="item-detail">💰 ${item.price}</div>` : ''}
-                    ` : `
-                        ${item.cuisine ? `<div class="item-detail">🍽️ ${item.cuisine}</div>` : ''}
-                        ${item.location ? `<div class="item-detail">📍 ${item.location}</div>` : ''}
-                        ${item.price ? `<div class="item-detail">💰 ${item.price}</div>` : ''}
-                    `}
-                    ${item.memo ? `<div class="item-detail">💡 ${item.memo}</div>` : ''}
-                    ${item.mapLink ? `<a href="${item.mapLink}" target="_blank" class="item-link">🗺️ 지도보기</a>` : ''}
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
+
+        window.updateFormFields = function() {
+            const type = document.getElementById('type').value;
+            document.getElementById('attraction-fields').style.display = type === 'attraction' ? 'block' : 'none';
+            document.getElementById('restaurant-fields').style.display = type === 'restaurant' ? 'block' : 'none';
+        };
 
         window.setDateAndOpen = function(date, type) {
             currentDate = date;
-            currentType = type;
             document.getElementById('date').value = date;
-            document.getElementById('modal-title').textContent = type === 'attraction' ? '관광지 추가' : '맛집 추가';
-            document.getElementById('attraction-fields').style.display = type === 'attraction' ? 'block' : 'none';
-            document.getElementById('restaurant-fields').style.display = type === 'restaurant' ? 'block' : 'none';
+            document.getElementById('type').value = type || '';
+            document.getElementById('modal-title').textContent = '일정 추가';
+            updateFormFields();
             document.getElementById('modal').classList.add('active');
         }
 
